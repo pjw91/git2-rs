@@ -8,6 +8,7 @@ use crate::IntoCString;
 use crate::{panic, raw, Buf, Error, Oid, Repository, Revwalk};
 
 /// Stages that are reported by the `PackBuilder` progress callback.
+#[derive(Debug)]
 pub enum PackBuilderStage {
     /// Adding objects to the pack
     AddingObjects,
