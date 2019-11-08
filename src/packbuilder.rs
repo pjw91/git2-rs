@@ -4,6 +4,7 @@ use std::ptr;
 use std::slice;
 
 use crate::util::Binding;
+use crate::IntoCString;
 use crate::{panic, raw, Buf, Error, Oid, Repository, Revwalk};
 
 /// Stages that are reported by the `PackBuilder` progress callback.
@@ -78,6 +79,20 @@ impl<'repo> PackBuilder<'repo> {
     pub fn write_buf(&mut self, buf: &mut Buf) -> Result<(), Error> {
         unsafe {
             try_call!(raw::git_packbuilder_write_buf(buf.raw(), self.raw));
+        }
+        Ok(())
+    }
+
+    /// TODO
+    pub fn write<P: AsRef<std::path::Path>>(&mut self, path: P, mode: u32) -> Result<(), Error> {
+        unsafe {
+            try_call!(raw::git_packbuilder_write(
+                self.raw,
+                path.as_ref().into_c_string()?,
+                mode,
+                None,
+                ptr::null_mut()
+            ));
         }
         Ok(())
     }
