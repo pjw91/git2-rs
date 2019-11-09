@@ -84,14 +84,28 @@ impl<'repo> PackBuilder<'repo> {
     }
 
     /// TODO
-    pub fn write<P: AsRef<std::path::Path>>(&mut self, path: P, mode: u32) -> Result<(), Error> {
+    pub fn write<P, F>(&mut self, path: P, mode: u32, mut cb: Option<F>) -> Result<(), Error>
+    where
+        P: AsRef<std::path::Path>,
+        F: FnMut(crate::remote_callbacks::Progress<'_>) -> bool,
+    {
+        let (cb, ptr): (Option<raw::git_transfer_progress_cb>, *mut _) = match cb {
+            Some(ref mut cb) => {
+                let ptr = &mut (cb as &mut crate::TransferProgress<'_>) as *mut _;
+                (
+                    Some(crate::remote_callbacks::transfer_progress_cb),
+                    ptr as *mut _,
+                )
+            }
+            None => (None, ptr::null_mut()),
+        };
         unsafe {
             try_call!(raw::git_packbuilder_write(
                 self.raw,
                 path.as_ref().into_c_string()?,
                 mode,
-                None,
-                ptr::null_mut()
+                cb,
+                ptr
             ));
         }
         Ok(())

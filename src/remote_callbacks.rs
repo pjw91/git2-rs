@@ -252,7 +252,7 @@ extern "C" fn credentials_cb(
     }
 }
 
-extern "C" fn transfer_progress_cb(
+pub(crate) extern "C" fn transfer_progress_cb(
     stats: *const raw::git_indexer_progress,
     payload: *mut c_void,
 ) -> c_int {
